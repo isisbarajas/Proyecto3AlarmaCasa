@@ -60,7 +60,7 @@ int main(void) {
 
     char key=0, anterior;
     char clave[12]={'A','C','A','B','A','D','A','1','3','7','9',0};
-    char dato[12]={'0','0','0','0','0','0','0','0','0','0','0',0};
+    char Dato[12]={'0','0','0','0','0','0','0','0','0','0','0',0};
     char reset[12]={'0','0','0','0','0','0','0','0','0','0','0',0};
 
     int j=0;
@@ -86,8 +86,6 @@ int main(void) {
         uint16_t TIMER_ON=0;
         uint32_t timerbandera;
         uint8_t texto=0;
-
-
 
         while(1){
              GPIO_WritePinOutput(GPIOC, rojo, FSM[estado].lrojo);
@@ -524,7 +522,7 @@ int main(void) {
            			LCD_Write('A');
            		    LCD_DDRAM(40u);
 
-           			mostrar_texto=1;
+           			texto=1;
            		}
 
            		if(key==0 && anterior!=0){
