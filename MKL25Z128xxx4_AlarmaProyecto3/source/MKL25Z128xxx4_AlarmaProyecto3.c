@@ -24,8 +24,6 @@ void LCD_DDRAM(uint8_t Address);
 void Delay (uint32_t delay);
 void DelayTPM();
 
-#define DELAY 100000
-#define buzzer 7u
 #define rojo 0u
 #define verde 3u
 #define amarillo 4u
@@ -33,6 +31,8 @@ void DelayTPM();
 #define sensor2 6u
 #define sensor3 10u
 #define sensor4 11u
+#define DELAY 100000
+#define buzzer 7u
 
 typedef struct{
 	uint8_t Buzzer;
@@ -62,12 +62,9 @@ int main(void) {
     char clave[12]={'A','C','A','B','A','D','A','1','3','7','9',0};
     char Dato[12]={'0','0','0','0','0','0','0','0','0','0','0',0};
     char reset[12]={'0','0','0','0','0','0','0','0','0','0','0',0};
-
     int j=0;
 
-
     state FSM[12];
-
         FSM[0]=(state){.lrojo=0u, .lverde=1u, .lamarillo=0u, .Buzzer=0u};/* Alarma desactivada*/
         FSM[1]=(state){.lrojo=0u, .lverde=1u, .lamarillo=0u, .Buzzer=0u};/* Alarma desactivada, estado donde se pide clave*/
         FSM[2]=(state){.lrojo=0u, .lverde=1u, .lamarillo=0u, .Buzzer=0u};/* Alarma desactivada, se verifica la clave*/
@@ -86,27 +83,19 @@ int main(void) {
         uint16_t TIMER_ON=0;
         uint32_t timerbandera;
         uint8_t texto=0;
-
         while(1){
              GPIO_WritePinOutput(GPIOC, rojo, FSM[estado].lrojo);
              GPIO_WritePinOutput(GPIOC, verde, FSM[estado].lverde);
              GPIO_WritePinOutput(GPIOC, amarillo, FSM[estado].lamarillo);
              GPIO_WritePinOutput(GPIOC, buzzer, FSM[estado].Buzzer);
-
            	Sensor1=GPIO_ReadPinInput(GPIOC, sensor1);
            	Sensor2=GPIO_ReadPinInput(GPIOC, sensor2);
            	Sensor3=GPIO_ReadPinInput(GPIOC, sensor3);
            	Sensor4=GPIO_ReadPinInput(GPIOC, sensor4);
-
-
-
          	timerbandera=TPM_GetStatusFlags(TPM0);
-
            	anterior=key;
            	key=read_keypad(&k);
-
            	switch (estado){
-
            	case 0:
            		if(texto==0){
            		    LCD_Set(1u,1u,1u);
@@ -132,11 +121,9 @@ int main(void) {
            		    LCD_Write('A');
            			texto=1;
            		}
-
            	    if(key==0 && anterior!=0){
            	    	key=anterior;
            	    		if(key=='*' ){
-
            	    			texto=0;
            	    			estado=1;
            	    }
@@ -146,11 +133,9 @@ int main(void) {
            	    		}
            	    		key=0;
            	    }
-
-           	    		break;
-
+           	   break;
            	case 1: /*Ingresar la clave*/
-        		if(!texto){    /* Evita que la palabra clave aparezca varias veces */
+        		if(texto==0){    /* Evita que la palabra clave aparezca varias veces */
            		    LCD_Set(1u,1u,1u);
            		    LCD_Clear();
            		    LCD_Write('C');
@@ -163,7 +148,6 @@ int main(void) {
         		if(key==0 && anterior!=0){
         			key=anterior;
         			if(key!='#'){
-
         				Dato[j]=key;
                		    LCD_Set(1u,1u,1u);
                		    LCD_Write('*');
@@ -176,17 +160,10 @@ int main(void) {
         				texto=0;
         				j=0;
         				estado=2;
-
-
         				}
-        			key=0;
-
+        		key=0;
         			}
-
-
-
            	break;
-
         	case 2: /*verifica la clave*/
         		if(strcmp(clave,Dato)==0){ /*Compara lo que tiene clave con Dato (0 cuando coincide)*/
             		strcpy(Dato,reset); /*Regresa al varlor original a Dato*/
@@ -194,13 +171,11 @@ int main(void) {
             		estado=3;
         		}
         		else{
-        			printf("\nClave incorrecta, intenta de nuevo\n");
            		    key=0;
             		strcpy(Dato,reset);
         			estado=8;
         		}
         	break;
-
         	case 3: /*alarma armada sensores inactivos, dura 20s*/
            		if(texto==0){
            		    LCD_Set(1u,1u,1u);
@@ -227,7 +202,6 @@ int main(void) {
                     TPM_StartTimer(TPM0, kTPM_SystemClock);
                     TIMER_ON=1;
                  }
-
                 if(timerbandera){
                 TPM_ClearStatusFlags(TPM0, 1u<8u);
                 TIMER_ON=0;
@@ -236,7 +210,7 @@ int main(void) {
                 TPM0->CNT=0;
                 estado=4;
                 }
-       	    	break;
+       	   break;
 
            	case 4:
            		if(texto==0){
@@ -328,7 +302,6 @@ int main(void) {
            		    LCD_Write('A');
            		    LCD_Write('V');
            		    LCD_Write('E');
-
         	    }
         	    if(Sensor2==0){
            		    LCD_Set(1u,1u,1u);
@@ -439,13 +412,9 @@ int main(void) {
         	           	    			estado=6;
         	           	    		}
         	           	    		key=0;
-
         	    }
-
            	break;
-
            	case 6:
-
            		if(texto==0){
            		    LCD_Set(1u,1u,1u);
            		    LCD_Clear();
@@ -457,7 +426,6 @@ int main(void) {
            		    key=0;
            			texto=1;
            		}
-
        	    if(key==0 && anterior!=0){
        	    	key=anterior;
        	    		if(key!='#' ){
@@ -468,7 +436,6 @@ int main(void) {
         		    	DelayTPM();
        	    		}
        	    		else{
-        				printf("\n");
         				texto=0;
         				j=0;
         				estado=7;
@@ -476,13 +443,9 @@ int main(void) {
        	    	}
        	    		key=0;
        	    }
-
-
            	break;
-
            	case 7:
         		if(strcmp(clave,Dato)==0){
-            		printf("\nClave Correcta\n");
             		strcpy(Dato,reset);
             		Sensor1=1; /*Regresa sensores a valor original*/
             		Sensor2=1;
@@ -492,16 +455,13 @@ int main(void) {
             		estado=0;
         		}
         		else{
-        			printf("\nContrasena Incorrecta\n");
         			strcpy(Dato,reset);
         			key=0;
         			estado=6;
         		}
         	break;
-
-
            	case 8:
-           		if(!texto){
+           		if(texto==0){
            			LCD_Set(1u,1u,1u);
            		    LCD_Activate(1u,1u,0u);
            			LCD_Clear();
@@ -539,11 +499,6 @@ int main(void) {
            	}
            	}
         }
-
-
-
-
-
 void LCD_Data(uint8_t *high, uint8_t *low, uint8_t c)
 {
   *high=(c & 0xF0) >> 4;
